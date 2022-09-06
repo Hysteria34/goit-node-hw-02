@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get('/', async (req, res, next) => {
   const contacts = await Contact.find({});
+
     try {
        res.json({
          status:"success",
@@ -26,7 +27,9 @@ router.get('/', async (req, res, next) => {
 router.get('/:contactId', async (req, res, next) => {
   try{
   const { contactId } = req.params;
+
   const result = await Contact.findById(contactId);
+
   if (!result) {
       throw new NotFound(`Product with id=${contactId} not found`);
   }
@@ -45,12 +48,14 @@ catch(error){
 
 router.post('/', async (req, res, next) => {
   try {
+
     const {error} = contactsJoiSchema.validate(req.body);
         if(error){
             error.status = 400; 
             error.message = "missing required name field";
             throw error;}
     const result = await Contact.create(req.body);
+
     res.status(201).json({
         status: "success",
         code: 201,
@@ -67,7 +72,9 @@ router.post('/', async (req, res, next) => {
 router.delete('/:contactId', async (req, res, next) => {
   try{
   const { contactId } = req.params;
+
     const result = await Contact.findByIdAndRemove(contactId);
+
     if (!result) {
         throw new NotFound(`Product with id=${contactId} not found`);
     }
@@ -87,6 +94,7 @@ router.delete('/:contactId', async (req, res, next) => {
 
 router.put('/:contactId', async (req, res, next) => {
   try{
+
     const {error} = contactsJoiSchema.validate(req.body);
     console.log({error})
     if(error){
@@ -115,6 +123,7 @@ catch(error){
 router.patch('/:contactId/status', async (req, res, next) => {
   try{
     const {error} = statusJoiSchema.validate(req.body);
+
     console.log({error})
     if(error){
         error.status = 400;
@@ -122,8 +131,10 @@ router.patch('/:contactId/status', async (req, res, next) => {
         throw error;
     }
   const { contactId } = req.params;
+
   const {favorite} = req.body;
   const result = await Contact.findByIdAndUpdate(contactId, {favorite},{new:true});
+
   if (!result) {
       throw new NotFound(`Product with id=${contactId} not found`);
   }

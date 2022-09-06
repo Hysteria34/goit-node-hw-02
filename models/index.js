@@ -6,4 +6,5 @@ module.exports = {
    Contact,
    statusJoiSchema,
    contactsJoiSchema
+
 }

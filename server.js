@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 const app = require('./app');
 require("dotenv").config();
@@ -10,5 +11,6 @@ mongoose.connect(DB_HOST)
   console.log(error.message);
   process.exit(1);
 })
+
 
 
