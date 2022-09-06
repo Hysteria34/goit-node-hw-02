@@ -1,12 +1,15 @@
 const express = require('express');
 const { NotFound } = require("http-errors");
 const {Contact,contactsJoiSchema,statusJoiSchema} = require("../../models/contact");
+const {auth} = require("../../middlewares")
 
 const router = express.Router();
 
-router.get('/', async (req, res, next) => {
-  const contacts = await Contact.find({});
-
+router.get('/', auth, async (req, res, next) => {
+  const {_id} = req.user;
+  const {page = 1, limit = 5} = req.query;
+  const skip = (page - 1) * limit;
+  const contacts = await Contact.find({owner: _id}, "", {skip, limit: Number(limit)});
     try {
        res.json({
          status:"success",
@@ -27,9 +30,7 @@ router.get('/', async (req, res, next) => {
 router.get('/:contactId', async (req, res, next) => {
   try{
   const { contactId } = req.params;
-
   const result = await Contact.findById(contactId);
-
   if (!result) {
       throw new NotFound(`Product with id=${contactId} not found`);
   }
@@ -46,16 +47,15 @@ catch(error){
 }
 })
 
-router.post('/', async (req, res, next) => {
+router.post('/',auth, async (req, res, next) => {
   try {
-
     const {error} = contactsJoiSchema.validate(req.body);
         if(error){
             error.status = 400; 
             error.message = "missing required name field";
             throw error;}
-    const result = await Contact.create(req.body);
-
+            const {_id} = req.user;
+            const result = await Contact.create({...req.body, owner: _id});
     res.status(201).json({
         status: "success",
         code: 201,
@@ -72,9 +72,7 @@ router.post('/', async (req, res, next) => {
 router.delete('/:contactId', async (req, res, next) => {
   try{
   const { contactId } = req.params;
-
     const result = await Contact.findByIdAndRemove(contactId);
-
     if (!result) {
         throw new NotFound(`Product with id=${contactId} not found`);
     }
@@ -94,7 +92,6 @@ router.delete('/:contactId', async (req, res, next) => {
 
 router.put('/:contactId', async (req, res, next) => {
   try{
-
     const {error} = contactsJoiSchema.validate(req.body);
     console.log({error})
     if(error){
@@ -123,7 +120,6 @@ catch(error){
 router.patch('/:contactId/status', async (req, res, next) => {
   try{
     const {error} = statusJoiSchema.validate(req.body);
-
     console.log({error})
     if(error){
         error.status = 400;
@@ -131,10 +127,8 @@ router.patch('/:contactId/status', async (req, res, next) => {
         throw error;
     }
   const { contactId } = req.params;
-
   const {favorite} = req.body;
   const result = await Contact.findByIdAndUpdate(contactId, {favorite},{new:true});
-
   if (!result) {
       throw new NotFound(`Product with id=${contactId} not found`);
   }
