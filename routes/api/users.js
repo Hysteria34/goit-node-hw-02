@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
 const {sendEmail} = require("../../helpers");
 
+
 const {User} = require("../../models/user");
 const { auth } = require('../../middlewares');
 const {nanoid} = ("nanoid")
@@ -18,6 +19,7 @@ router.post('/signup', async (req, res) => {
         if(user){
             throw new Conflict("Email in use")
         }
+
         const verificationToken = nanoid();
         const avatarURL = gravatar.url(email);
         
@@ -32,6 +34,7 @@ router.post('/signup', async (req, res) => {
         await sendEmail(mail);
 
         const result = await User.create({name, email, password:hashPassword,avatarURL,verificationToken});
+
         res.status(201).json({
             status: "success",
             code: 201,

@@ -1,6 +1,7 @@
 const express = require('express');
 const {User} = require("../../models/user");
 const {NotFound} = require("http-errors");
+
 const path = require("path");
 const fs = require("fs/promises");
 
@@ -52,4 +53,5 @@ router.get("/verify/:verificationToken", async (req, res) => {
         message: "Verification successful"
     })
 });
+
 module.exports = router
