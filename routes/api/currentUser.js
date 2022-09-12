@@ -1,5 +1,7 @@
 const express = require('express');
 const {User} = require("../../models/user");
+const {NotFound} = require("http-errors");
+
 const path = require("path");
 const fs = require("fs/promises");
 
@@ -38,5 +40,18 @@ router.patch('/avatars',auth, upload.single("avatar"), async (req, res) => {
             await fs.unlink(tempUpload);
             throw error;
         }
-})
+});
+router.get("/verify/:verificationToken", async (req, res) => {
+    const {verificationToken} = req.params;
+    const user = await User.findOne({verificationToken});
+    if(!user){
+        throw NotFound();
+    }
+    await User.findByIdAndUpdate(user._id, {verify: true, verificationToken: null});
+
+    res.json({
+        message: "Verification successful"
+    })
+});
+
 module.exports = router
