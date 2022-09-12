@@ -1,6 +1,11 @@
 const express = require('express');
-// const {User} = require("../../models/user");
-const {auth} = require("../../middlewares")
+const {User} = require("../../models/user");
+const path = require("path");
+const fs = require("fs/promises");
+
+const {auth,upload} = require("../../middlewares")
+
+const avatarsDir = path.join("public", "avatars");
 
 const router = express.Router();
 
@@ -18,6 +23,20 @@ router.get('/current',auth, async (req, res) => {
 
         }
     })
+});
+router.patch('/avatars',auth, upload.single("avatar"), async (req, res) => {
+        const {path: tempUpload, originalname} = req.file;
+        const {_id: id} = req.user;
+        const imageName =  `${id}_${originalname}`;
+        try {
+            const resultUpload = path.join(avatarsDir, imageName);
+            await fs.rename(tempUpload, resultUpload);
+            const avatarURL = path.join("public", "avatars", imageName);
+            await User.findByIdAndUpdate(req.user._id, {avatarURL});
+            res.json({avatarURL});
+        } catch (error) {
+            await fs.unlink(tempUpload);
+            throw error;
+        }
 })
-
 module.exports = router
